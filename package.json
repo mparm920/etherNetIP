@@ -5,7 +5,9 @@
   "main": "testServer.js",
   "dependencies": {
     "express": "^4.10.7",
-    "node-state": "^1.4.1"
+    "node-state": "^1.4.1",
+    "socket.io": "^1.2.1",
+    "socket.io-client": "^1.2.1"
   },
   "devDependencies": {
     "coffee-script": "^1.8.0"
