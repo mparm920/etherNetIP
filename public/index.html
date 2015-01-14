@@ -1,0 +1,28 @@
+<html>
+	<style>
+		#tagData
+		{
+			width: 100%;
+			word-break: break-all;
+		}
+		p
+		{
+			width: 95%;
+			word-wrap: break-word;
+		}
+	</style>
+	<body>
+		<h1>It Worked</h1>
+		<div id='tagData'></div>
+	</body>
+	<script src='/socket.io/socket.io.js'></script>
+	<script>
+		var socket = io('http://localhost:3001/web');
+		socket.on('data', function(data) {
+			document.getElementById('tagData').innerHTML = ('<p>' + data.toString() + '</p>');
+		}); 
+		socket.on('count', function(count) {
+			document.getElementById('count').innerHTML = count.toString();
+		});
+	</script>
+</html>
