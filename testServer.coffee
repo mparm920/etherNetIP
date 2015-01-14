@@ -1,13 +1,15 @@
-express = require 'express'
-app = express()
 net = require 'net'
 headers = require './Headers.coffee'
+
+io = require('socket.io-client')('http://localhost:3001/server')
+
 
 socket = new net.Socket({readable: true, writable: true})
 
 socket.connect 44818, "172.16.1.40", () ->
 	socket.write headers.RegBuffer()  #sending ENIP request to PLC
 
+tempBuffer = new Buffer(5122)
 count = 0
 socket.on 'data', (data) ->
 	console.log "command " + data[0]
@@ -18,23 +20,24 @@ socket.on 'data', (data) ->
 			socket.write headers.CmBuffer() #CM request
 		when 111 #receive CM and send 0ut first CIP
 			data.copy headers.ConnectionID, 0, 44, 48 #connection Id from plc 
-			headers.Length.writeUInt16LE headers.CipSendCSDLength(), 0 #insterting length for command specific data
+			headers.Length.writeUInt16LE headers.GetCipSendCSDLength(), 0 #insterting length for command specific data
 			socket.write headers.CipBuffer()
-		when 112
-			seq = headers.CipSequence.readUInt16LE 0
+		when 112 #sending CIP command and asking for tag data will concatinate data until successful from byte 48
+			seq = headers.CipSequence.readUInt16LE 0 # incrementing the sequence value every time a new packet is sent out
 			headers.CipSequence.writeUInt16LE seq + 1, 0
-			#if count % 2 == 0
 			setTimeout () ->
-				console.log 'cip'
-				if data[49] = 6
+				if data[48] is 6
+					data.copy tempBuffer, count, 50
 					count += (data.length - 50)
 					headers.RequestDataLength.writeUInt32LE count, 0
 				else
+					io.emit 'data', (tempBuffer.toString() + '</br>Count: ' + parseInt(headers.RequestTotalData.toString(), 16).toString())
 					count = 0
 					headers.RequestDataLength.writeUInt32LE count, 0
+					process.exit(0)
 				headers.Length.writeUInt16LE headers.CipBuffer().length - 24, 0
 				socket.write headers.CipBuffer()
-			, 3000
+			, 30
 			#else
 			#	console.log 'multi'
 			#	headers.Length.writeUInt16LE headers.MultiBuffer().length - 24, 0
@@ -42,4 +45,3 @@ socket.on 'data', (data) ->
 			#count++
 		else
 			console.log 'default'
-
