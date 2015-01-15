@@ -29,13 +29,13 @@ Headers = {
 	TypeIDb1 : new Buffer([0xb1, 0x00])
 	B1Length : new Buffer([0x12, 0x00]) #calculated from remaining bytes in packet
 	CipSequence : new Buffer([0x62, 0x00])
-	CipService : new Buffer([0x52])
+	CipService : new Buffer([0x4c]) #0x52 read fragment and 0x4c read
 	RequestPathSize : new Buffer([0x04]) #in WORDS (Double byte) number of words for reques path padding appended to end of needed
 	PathSegment : new Buffer([0x91]) #ANSI Extended Symbol Segment
 	DataSize : new Buffer([0x06]) #length of TagSymbol
-	TagSymbol : new Buffer([0x52, 0x46, 0x49, 0x44, 0x31, 0x5f, 0x52, 0x45, 0x41, 0x44])
+	TagSymbol : new Buffer([0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x4f, 0x5f, 0x50, 0x43])
 	Padding : new Buffer(0)
-	RequestTotalData : new Buffer([0x0d, 0x66])
+	RequestTotalData : new Buffer([0x4c, 0x00])
 	RequestDataLength : new Buffer([0x00, 0x00, 0x00, 0x00])
 
 	RegBuffer : () ->
