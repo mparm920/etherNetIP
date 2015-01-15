@@ -9,7 +9,7 @@ socket = new net.Socket({readable: true, writable: true})
 socket.connect 44818, "172.16.1.40", () ->
 	socket.write headers.RegBuffer()  #sending ENIP request to PLC
 
-tempBuffer = new Buffer(5122)
+tempBuffer = new Buffer(100)
 count = 0
 socket.on 'data', (data) ->
 	console.log "command " + data[0]
@@ -25,23 +25,18 @@ socket.on 'data', (data) ->
 		when 112 #sending CIP command and asking for tag data will concatinate data until successful from byte 48
 			seq = headers.CipSequence.readUInt16LE 0 # incrementing the sequence value every time a new packet is sent out
 			headers.CipSequence.writeUInt16LE seq + 1, 0
-			setTimeout () ->
-				if data[48] is 6
-					data.copy tempBuffer, count, 50
-					count += (data.length - 50)
-					headers.RequestDataLength.writeUInt32LE count, 0
-				else
-					io.emit 'data', (tempBuffer.toString() + '</br>Count: ' + parseInt(headers.RequestTotalData.toString(), 16).toString())
-					count = 0
-					headers.RequestDataLength.writeUInt32LE count, 0
-					process.exit(0)
-				headers.Length.writeUInt16LE headers.CipBuffer().length - 24, 0
-				socket.write headers.CipBuffer()
-			, 30
-			#else
-			#	console.log 'multi'
-			#	headers.Length.writeUInt16LE headers.MultiBuffer().length - 24, 0
-			#	socket.write headers.MultiBuffer()
-			#count++
+
+			data.copy tempBuffer, count, 52
+			count += (data.length - 52)
+			if data[48] is 6
+				headers.RequestDataLength.writeUInt32LE count, 0
+			else
+				console.log count
+				io.emit 'data', (tempBuffer.toString('hex') + '</br>Count: ' + count.toString())
+				count = 0
+				headers.RequestDataLength.writeUInt32LE count, 0
+				process.exit(0)
+			headers.Length.writeUInt16LE headers.CipBuffer().length - 24, 0
+			socket.write headers.CipBuffer()
 		else
 			console.log 'default'
