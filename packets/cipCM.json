@@ -1,0 +1,6 @@
+{
+	bigEndian: true,
+	fields: [
+		{name: "command", start: 0, type:
+	]
+}
