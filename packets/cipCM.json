@@ -27,5 +27,19 @@
 		{name: "connectionSN", start: 56, type: "uint16", default: 56293 },
 		{name: "vendorId", start: 58, type: "uint16", default: 17733 }, 
 		{name: "originatorSN", start: 60, type: "uint32", default: 0 }, 
+		{name: "connectionTimeoutMult", start: 64, type: "uint8", default: 2 },
+		{name: "reserved1", start: 65, type: "uint8", default: 0 },
+		{name: "reserved2", start: 66, type: "uint8", default: 0 },
+		{name: "reserved3", start: 67, type: "uint8", default: 0 },
+		{name: "o-tRPI", start: 68, type: "uint32", default: 2156142080 },
+		{name: "o-tNetworkConnectionParams", start: 74, type: "uint16", default: 62531 },
+		{name: "t-oRPI", start: 76, type: "uint32", default: 2156142080 },
+		{name: "t-oNetworkConnectionParams", start: 80, type: "uint16", default: 62531 },
+		{name: "transportTrigger", start: 82, type: "uint8", default: 163 },
+		{name: "connectionPathSize", start: 83, type: "uint8", default: 4 },
+		{name: "portSegmentType", start: 84, type: "uint16", default: 256 },
+		{name: "classSegment", start: 86, type: "uint16", default: 8194 },
+		{name: "instanceSegment", start: 88, type: "uint16", default: 9217 },
+		{name: "connectionPointSegment", start: 90, type: "uint16", default: 11265 }
 	]
 }
