@@ -1,12 +1,13 @@
-enipSpec = require('./packets/enip.json')
-cipCMSpec = require('./packets/cipCM.json')
 NodeState = require('node-state')
 Net = require('net')
 DecoderRing = require('decoder-ring')
+RequireDirectory = require('require-directory')
+Spec = RequireDirectory(module, './packets')
 
 module.exports = class EtherNetIP extends NodeState
   constructor: (options) ->
     @sessionHandle = null
+    @connectionId  = null
     @decoderRing   = new DecoderRing()
     @ip            = '127.0.0.1'
     @port          = 44818
@@ -24,30 +25,32 @@ module.exports = class EtherNetIP extends NodeState
       Enter: () ->
         @raise 'Send'
       Send: () ->
-        @socket.write @decoderRing.encode({}, enipSpec)
+        @socket.write @decoderRing.encode({}, Spec.enip)
       Recieve: (data) ->
-        data = @decoderRing.decode(data, enipSpec)
+        data = @decoderRing.decode(data, Spec.enip)
         if data.status is 0
           @sessionHandle = data.session_handle
           @goto 'enipcm'
     enipcm:
       Enter: () ->
-        console.log @sessionHandle
         @raise 'Send'
       Send: () ->
-        console.log 'sending cm'
-        cipCMSpec.fields[2].default = @sessionHandle
-        @socket.write @decoderRing.encode({}, cipCMSpec)
+        Spec.cipCM.fields[2].default = @sessionHandle #setting the session handle returned from the PLC
+        Spec.cip.fields[2].default = @sessionHandle
+        @socket.write @decoderRing.encode({}, Spec.cipCM)
       Recieve: (data) ->
-        @goto 'cipSend', data
+        @connectionId = data.readInt32LE 28 #reads connectionId sent back from PLC
+        status = data.readInt16LE 26 #checks CIP packet status 0 is success anything else is a error
+        if !status
+          @goto 'cipSend'
+        else
+          console.log status
     cipSend:
-      Enter: (data) ->
+      Enter: () ->
         console.log 'Enter CIP call'
-	
-      SendCIP: (data) ->
-        console.log 'send call'
-      MultiService: (data) ->
-        console.log 'multiservice call'
+      SendCIP: () ->
+        console.log @decoderRing.encode({}, Spec.cip)
+        @socket.write @decoderRing.encode({}, Spec.cip)
       Recieve: (data) ->
         console.log 'receive data'
 

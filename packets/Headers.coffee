@@ -27,10 +27,10 @@ Headers = {
 	ConnectionIDLength : new Buffer([0x04, 0x00])
 	ConnectionID : new Buffer([0x00, 0x00, 0x00, 0x00])
 	TypeIDb1 : new Buffer([0xb1, 0x00])
-	B1Length : new Buffer([0x12, 0x00]) #calculated from remaining bytes in packet
+	B1Length : new Buffer([0x10, 0x00]) #calculated from remaining bytes in packet
 	CipSequence : new Buffer([0x62, 0x00])
-	CipService : new Buffer([0x4c]) #0x52 read fragment and 0x4c read
-	RequestPathSize : new Buffer([0x04]) #in WORDS (Double byte) number of words for reques path padding appended to end of needed
+	CipService : new Buffer([0x55]) #0x52 read fragment and 0x4c read, 0x55 request of instances/attribute
+	RequestPathSize : new Buffer([0x03]) #in WORDS (Double byte) number of words for reques path padding appended to end of needed
 	PathSegment : new Buffer([0x91]) #ANSI Extended Symbol Segment
 	DataSize : new Buffer([0x06]) #length of TagSymbol
 	TagSymbol : new Buffer([0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x4f, 0x5f, 0x50, 0x43])
@@ -47,8 +47,8 @@ Headers = {
 	CipBuffer : () ->
 	  @GetRequestPathSize()
 	  @GetTagSymbolLength()
-	  @GetConnectedDataItemLength()
-	  Buffer.concat([@CommandUnitData, @Length, @SessionHandle, @CipStatus, @SenderContext, @Options, @InterfaceHandle, @CipTimeOut, @CIPItemCount, @ConnectionAddressItem, @ConnectionIDLength, @ConnectionID, @TypeIDb1, @B1Length, @CipSequence, @CipService, @RequestPathSize, @PathSegment, @DataSize, @TagSymbol, @Padding, @RequestTotalData, @RequestDataLength])
+	  #@GetConnectedDataItemLength()
+	  Buffer.concat([@CommandUnitData, @Length, @SessionHandle, @CipStatus, @SenderContext, @Options, @InterfaceHandle, @CipTimeOut, @CIPItemCount, @ConnectionAddressItem, @ConnectionIDLength, @ConnectionID, @TypeIDb1, @B1Length, @CipSequence, @CipService, @RequestPathSize, new Buffer([0x20, 0x6b, 0x25, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x02, 0x00])])#@PathSegment, @DataSize, @TagSymbol, @Padding, @RequestTotalData, @RequestDataLength])
 
 	GetRequestPathSize : () ->
 	  num = Buffer.concat([@PathSegment, @DataSize, @TagSymbol, @Padding]).length

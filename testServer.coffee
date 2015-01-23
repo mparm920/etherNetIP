@@ -39,4 +39,4 @@ socket.on 'data', (data) ->
 			headers.Length.writeUInt16LE headers.CipBuffer().length - 24, 0
 			socket.write headers.CipBuffer()
 		else
-			console.log 'default'
+			console.log data
