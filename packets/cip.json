@@ -15,7 +15,8 @@
 		{name: "connectionId", start: 36, type: "uint32", default: 0 },
 		{name: "typeId2", start: 40, type: "uint16", default: 178 },
 		{name: "typeId2Length", start: 42, type: "uint16", default: 50 },
-		{name: "service", start: 44, type: "uint8", default: 84 },
+		{name: "sequenceCount", start: 44, type: "uint16", default: 0 },
+		{name: "service", start: 46, type: "uint8", default: 84 },
 		{name: "requestPathSize", start: 45, type: "uint8", default: 2 },
 	]
 }

@@ -1,13 +1,13 @@
 {
-	bigEndian: false,
-	fields: [
-		{name: "command", start: 0, type: 'uint16', default: 101 },
-		{name: "length", start: 2, type: 'uint16', defalut: 4 },
-		{name: "session_handle", start: 4, type: 'uint32', default: 0 },
-		{name: "status", start: 8, type: 'uint32', default: 0 },
-		{name: "sender_context", start: 12, type: 'ascii', length: 8, default: 'eflex' },
-		{name: "options", start: 20, type: 'uint32', default: 0 },
-		{name: "protocol_version", start: 24, type: 'uint16', default: 1 },
-		{name: "option_flags", start: 26, type: 'uint16', default: 0 }
+	"bigEndian": false,
+	"fields": [
+		{"name": "command", "start": 0, "type": "uint16", "default": 101 },
+		{"name": "length", "start": 2, "type": "uint16", "default": 4 },
+		{"name": "session_handle", "start": 4, "type": "uint32", "default": 0 },
+		{"name": "status", "start": 8, "type": "uint32", "default": 0 },
+		{"name": "sender_context", "start": 12, "type": "ascii", "length": 8, "default": "eflex   " },
+		{"name": "options", "start": 20, "type": "uint32", "default": 0 },
+		{"name": "protocol_version", "start": 24, "type": "uint16", "default": 1 },
+		{"name": "option_flags", "start": 26, "type": "uint16", "default": 0 }
 	]
 }
