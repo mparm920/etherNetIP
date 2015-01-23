@@ -1,5 +1,5 @@
 net = require 'net'
-headers = require './Headers.coffee'
+headers = require './packets/Headers.coffee'
 
 io = require('socket.io-client')('http://localhost:3001/server')
 
