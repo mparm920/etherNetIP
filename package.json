@@ -2,9 +2,10 @@
   "name": "EtherNetIP",
   "version": "1.0.0",
   "description": "'testing for ethernet ip communication to rockwell control logix PLC'",
-  "main": "testServer.js",
+  "main": "test.coffee",
   "dependencies": {
     "express": "^4.10.7",
+    "lodash": "^3.0.0",
     "node-state": "^1.4.1",
     "socket.io": "^1.2.1",
     "socket.io-client": "^1.2.1"

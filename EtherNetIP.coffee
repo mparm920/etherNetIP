@@ -12,10 +12,10 @@ module.exports = class EtherNetIP extends NodeState
     @ip            = '127.0.0.1'
     @port          = 44818
     @intialState   = 'enip'
-    if options.ip? then @ip = options.ip
-    if options.port? then @port = options.port
-    if options.intialState? then @intialState = options.intialState
-    @socket = new Net.connect { port: @port, host: @ip }
+    @ip            = options.ip ? @ip
+    @port          = options.port ? @port
+    @intialState   = options.intialState ? @intialState
+    @socket        = new Net.connect { port: @port, host: @ip }
     super autostart: false, initial_state: @intialState, sync_goto: true
     @socket.on 'data', (data) =>
       @raise 'Recieve', data
@@ -35,22 +35,29 @@ module.exports = class EtherNetIP extends NodeState
       Enter: () ->
         @raise 'Send'
       Send: () ->
-        Spec.cipCM.fields[2].default = @sessionHandle #setting the session handle returned from the PLC
-        Spec.cip.fields[2].default = @sessionHandle
-        @socket.write @decoderRing.encode({}, Spec.cipCM)
+        @socket.write @decoderRing.encode({session_handle: @sessionHandle}, Spec.cipCM)
       Recieve: (data) ->
-        @connectionId = data.readInt32LE 28 #reads connectionId sent back from PLC
-        status = data.readInt16LE 26 #checks CIP packet status 0 is success anything else is a error
+        @connectionId = data.readUInt32LE 44 #28 #reads connectionId sent back from PLC
+        status = data.readUInt16LE 26 #checks CIP packet status 0 is success anything else is a error
         if !status
           @goto 'cipSend'
         else
           console.log status
     cipSend:
       Enter: () ->
-        console.log 'Enter CIP call'
+        @raise 'SendCIP'
       SendCIP: () ->
-        console.log @decoderRing.encode({}, Spec.cip)
-        @socket.write @decoderRing.encode({}, Spec.cip)
+        cipHeader = @decoderRing.encode({
+                                          session_handle: @sessionHandle,
+                                          connectionId: @connectionId,
+                                          typeId2Length: 488,
+                                          dataLength: 2048,
+                                          length: 508
+                                        }, Spec.cip)
+        cipData = new Buffer(462)
+        cipData.fill 2
+        @socket.write Buffer.concat([cipHeader, cipData])
       Recieve: (data) ->
+        document.getElementById('buffer').innerHTML = data.toString()
         console.log 'receive data'
 
