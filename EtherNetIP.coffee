@@ -44,8 +44,6 @@ module.exports = class EtherNetIP extends NodeState
         else
           console.log status
     cipSend:
-      Enter: () ->
-        @raise 'SendCIP'
       SendCIP: () ->
         cipHeader = @decoderRing.encode({
                                           session_handle: @sessionHandle,

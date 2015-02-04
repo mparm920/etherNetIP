@@ -19,11 +19,6 @@
 		{"name": "service", "start": 46, "type": "uint8", "default": 83 },
 		{"name": "requestPathSize", "start": 47, "type": "uint8", "default": 7 },
 		{"name": "pathSegment", "start": 48, "type": "uint8", "default": 145 },
-		{"name": "dataSize", "start": 49, "type": "uint8", "default": 11 },
-		{"name": "dataPath", "start": 50, "type": "ascii", "length": 11, "default": "RFID1_WRITE" },
-		{"name": "padding", "start": 61, "type": "uint8", "default": 0 },
-		{"name": "dataType", "start": 62, "type": "uint16", "default": 195 },
-		{"name": "dataLength", "start": 64, "type": "uint16", "default": 2048 },
-		{"name": "offset", "start": 66, "type": "uint32", "default": 0 }
+		{"name": "dataSize", "start": 49, "type": "uint8", "default": 11 }
 	]
 }
