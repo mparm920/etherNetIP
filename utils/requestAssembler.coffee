@@ -5,58 +5,55 @@ Spec = RequireDir(module, '../packets')
 _ = require 'lodash'
 
 module.exports = class requestAssembler
-  constructor: ->
-    @data      = 'undefined'
-    @_byteSize = { "bit": 1, "uint8": 1, "int8": 1, "uint16": 2, "int16": 2, "uint32": 4, "int32": 4, "float": 4, "double": 8 }
+  constructor: () ->
+    @dataLength = 'undefined'
+    @_byteSize  = { "bit": 1, "uint8": 1, "int8": 1, "uint16": 2, "int16": 2, "uint32": 4, "int32": 4, "float": 4, "double": 8 }
 
-#TODO implement to return cip packet to send to the plc
-  buildPacket: (requestPath, dataType, @data, dataLength) ->
-    if @_getPathRequestLength(requestPath)
-      @_createPacketJSON('symbol', 'ascii', requestPath + '\0')
-    else
-      @_createPacketJSON('symbol', 'ascii', requestPath)
-    @_createPacketJSON('dataType', 'int16', dataType)
-    @_createPacketJSON('dataLength', 'int16', dataLength)
-    @_createPacketJSON('offset', 'int32', 0)
-    Spec.cip.fields[1].default = @_enipLength()
-    Spec.cip.fields[13].default = @_serviceLength()
+  buildPacket: (requestPath, @dataLength, totalDataLength, offset) ->
+    @_setPathRequest(requestPath)
+    @_updatePacketJSON 'totalDataLength', totalDataLength
+    @_updatePacketJSON 'offset', offset
+    @_enipLength()
+    @_serviceLength()
     @cipBuffer = decoderRing.encode {}, Spec.cip
-    @cipHeader = decoderRing.decode @cipBuffer, Spec.cip
+    Buffer.concat [@cipBuffer]
 
-  _getPathRequestLength: (requestPath) ->
+  setSessionId: (sessionId) ->
+    @_updatePacketJSON 'session_handle', sessionId
+
+  setConnectionId: (connectionId) ->
+    @_updatePacketJSON 'connectionId', connectionId
+
+  _setPathRequest: (requestPath) ->
     _len = requestPath.length
-    Spec.cip.fields[18].default = _len
+    @_updatePacketJSON 'symbolLength', _len
     if _len %% 2 is 0
-      Spec.cip.fields[16].default = _len / 2
-      false
+      @_updatePacketJSON 'requestPathSize', _len / 2
     else
-      Spec.cip.fields[16].default = (_len + 1) / 2
-      true
+      @_updatePacketJSON 'requestPathSize', (_len + 1) / 2
+      requestPath += '\u0000'
+    @_updatePacketJSON 'symbol', requestPath
 
-  _createPacketJSON: (name, type, value) ->
-    #lastObj is geting the starting point of the last object then adds the length of the data type to the lastObj starting point to get the starting point for the next object
-    lastObj = _(Spec.cip.fields).sortBy('start').last()
-    if lastObj.type is "ascii"
-       lastObjLength = lastObj.length
-    else
-       lastObjLength = @_byteSize[lastObj.type]
-    startByte = lastObj.start + lastObjLength
-    if type is "ascii"
-      Spec.cip.fields.push({name: name, start: startByte, type: type, length: value.length, default: value})
-    else
-      Spec.cip.fields.push({name: name, start: startByte, type: type, default: value})
+  _updatePacketJSON: (name, value) ->
+    index = _(Spec.cip.fields).findIndex({name: name})
+    Spec.cip.fields[index].default = value
+    if Spec.cip.fields[index].type is "ascii"
+      Spec.cip.fields[index].length = value.length
+      @_cascadeStartByte(index + 1, Spec.cip.fields[index].start + value.length)
 
   _enipLength: ->
     packetLength = _(Spec.cip.fields).sortBy('start').last()
     #24 is the lenght of the EtherNet IP header which isn't part of the length
-    packetLength.start + @_byteSize[packetLength.type] + @data.length - 24
+    @_updatePacketJSON 'length', packetLength.start + @_byteSize[packetLength.type] + @dataLength - 24
 
   _serviceLength: ->
     packetLength = _(Spec.cip.fields).sortBy('start').last()
     #42 is the lenght of the CIP header which isn't part of the length
-    packetLength.start + @_byteSize[packetLength.type] + @data.length - 42
+    @_updatePacketJSON 'typeId2Length', packetLength.start + @_byteSize[packetLength.type] + @dataLength - 42
 
-
-
-req = new requestAssembler()
-console.log req.buildPacket('RFID1_WRITE', 195, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 3)
+  _cascadeStartByte: (index, startByte) ->
+    for i in [index..Spec.cip.fields.length - 1]
+      do (i) =>
+        obj = Spec.cip.fields[i]
+        obj.start = startByte
+        startByte += @_byteSize[obj.type.toString()]
