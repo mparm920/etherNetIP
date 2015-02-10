@@ -10,6 +10,7 @@ module.exports = class requestAssembler
     @_byteSize  = { "bit": 1, "uint8": 1, "int8": 1, "uint16": 2, "int16": 2, "uint32": 4, "int32": 4, "float": 4, "double": 8 }
 
   buildPacket: (requestPath, @dataLength, totalDataLength, offset) ->
+    @_updateSequence()
     @_setPathRequest(requestPath)
     @_updatePacketJSON 'totalDataLength', totalDataLength
     @_updatePacketJSON 'offset', offset
@@ -28,9 +29,9 @@ module.exports = class requestAssembler
     _len = requestPath.length
     @_updatePacketJSON 'symbolLength', _len
     if _len %% 2 is 0
-      @_updatePacketJSON 'requestPathSize', _len / 2
+      @_updatePacketJSON 'requestPathSize', (_len + 2) / 2
     else
-      @_updatePacketJSON 'requestPathSize', (_len + 1) / 2
+      @_updatePacketJSON 'requestPathSize', (_len + 3) / 2
       requestPath += '\u0000'
     @_updatePacketJSON 'symbol', requestPath
 
@@ -49,7 +50,7 @@ module.exports = class requestAssembler
   _serviceLength: ->
     packetLength = _(Spec.cip.fields).sortBy('start').last()
     #42 is the lenght of the CIP header which isn't part of the length
-    @_updatePacketJSON 'typeId2Length', packetLength.start + @_byteSize[packetLength.type] + @dataLength - 42
+    @_updatePacketJSON 'typeId2Length', packetLength.start + @_byteSize[packetLength.type] + @dataLength - 44
 
   _cascadeStartByte: (index, startByte) ->
     for i in [index..Spec.cip.fields.length - 1]
@@ -57,3 +58,6 @@ module.exports = class requestAssembler
         obj = Spec.cip.fields[i]
         obj.start = startByte
         startByte += @_byteSize[obj.type.toString()]
+
+  _updateSequence: ->
+    Spec.cip.fields[14].default += 1
