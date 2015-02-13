@@ -27,7 +27,8 @@ module.exports = class EtherNetIP extends NodeState
       @packets.push Buffer.concat([@packetAssembler.buildPacket(data.symbol, @_maxPacketSize, data.packetData.length, _offset), data.packetData[_offset..._offset + @_maxPacketSize]])
       _offset += @_maxPacketSize
     @packets.push Buffer.concat([@packetAssembler.buildPacket(data.symbol, data.packetData[_offset..].length, data.packetData.length, _offset), data.packetData[_offset..]])
-    @raise 'Recieve'
+    #@raise 'Recieve', 1
+    @socket.write @packets.shift()
 
   states:
     enip:
@@ -47,7 +48,7 @@ module.exports = class EtherNetIP extends NodeState
       Send: () ->
         @socket.write @decoderRing.encode({session_handle: @sessionHandle}, Spec.cipCM)
       Recieve: (data) ->
-        @packetAssembler.setConnectionId = data.readUInt32LE 44 #28 #reads connectionId sent back from PLC
+        @packetAssembler.setConnectionId data.readUInt32LE 44 #28 #reads connectionId sent back from PLC
         status = data.readUInt16LE 26 #checks CIP packet status 0 is success anything else is a error
         if !status
           @goto 'cipSend'
@@ -55,7 +56,9 @@ module.exports = class EtherNetIP extends NodeState
           console.log status
     cipSend:
       WriteCIP: (data) ->
-        console.log data.symbol
         @_multiPackets(data)
-      Recieve: () ->
-        if @packets.length > 0 then @socket.write @packets.shift()
+      Recieve: (data) ->
+        if @packets.length > 0 and data?
+          if data.readUINT8(46)
+            console.log data.toString()
+            @socket.write @packets.shift()

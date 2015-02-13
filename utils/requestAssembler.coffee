@@ -17,7 +17,15 @@ module.exports = class requestAssembler
     @_enipLength()
     @_serviceLength()
     @cipBuffer = decoderRing.encode {}, Spec.cip
-    Buffer.concat [@cipBuffer]
+    #@cipBuffer.writeUInt8(6, 49)
+    #@cipBuffer.writeUInt8(0, 56)
+    #@cipBuffer.writeUInt8(145, 57)
+    #@cipBuffer.writeUInt8(11, 58)
+    #@cipBuffer.writeUInt8 0, 70
+    #@cipBuffer.writeUInt8(145, 71)
+    #@cipBuffer.writeUInt8(4, 72)
+    #@cipBuffer.writeUInt8(0, 77)
+    @cipBuffer
 
   setSessionId: (sessionId) ->
     @_updatePacketJSON 'session_handle', sessionId
